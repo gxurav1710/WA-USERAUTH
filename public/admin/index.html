@@ -1,0 +1,1153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>WA-USERAUTH Admin Control Center</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #090d16;
+      --surface: #111827;
+      --surface-elevated: #1a2234;
+      --border: #243047;
+      --border-focus: #10b981;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --accent: #10b981;
+      --accent-glow: rgba(16, 185, 129, 0.25);
+      --wa-green: #25d366;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --font: 'Plus Jakarta Sans', -apple-system, sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: var(--font);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+      background-image: 
+        radial-gradient(circle at 15% 15%, rgba(16, 185, 129, 0.08) 0%, transparent 40%),
+        radial-gradient(circle at 85% 85%, rgba(37, 211, 102, 0.05) 0%, transparent 40%);
+    }
+
+    /* Top Nav */
+    header {
+      background: rgba(17, 24, 39, 0.85);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      padding: 16px 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-logo {
+      width: 40px;
+      height: 40px;
+      background: linear-gradient(135deg, #25d366 0%, #059669 100%);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      box-shadow: 0 4px 16px var(--accent-glow);
+    }
+
+    .brand-text h1 {
+      font-size: 18px;
+      font-weight: 800;
+      letter-spacing: -0.4px;
+      background: linear-gradient(to right, #ffffff, #cbd5e1);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .brand-text span {
+      font-size: 11px;
+      color: var(--accent);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+    }
+
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .status-badge {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border);
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #64748b;
+    }
+
+    .status-badge.connected .status-dot {
+      background: var(--wa-green);
+      box-shadow: 0 0 10px var(--wa-green);
+    }
+
+    .status-badge.qr_ready .status-dot {
+      background: var(--warning);
+      box-shadow: 0 0 10px var(--warning);
+    }
+
+    .btn-logout {
+      background: rgba(239, 68, 68, 0.1);
+      border: 1px solid rgba(239, 68, 68, 0.25);
+      color: #f87171;
+      padding: 7px 14px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-logout:hover {
+      background: rgba(239, 68, 68, 0.2);
+    }
+
+    /* Main Container */
+    main {
+      flex: 1;
+      max-width: 1320px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 32px 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 28px;
+    }
+
+    /* Toast Notification */
+    #toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      padding: 12px 20px;
+      background: var(--surface-elevated);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 500;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+      transform: translateY(100px);
+      opacity: 0;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    #toast.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+
+    #toast.success {
+      border-color: var(--accent);
+      color: #a7f3d0;
+    }
+
+    #toast.error {
+      border-color: var(--danger);
+      color: #fca5a5;
+    }
+
+    /* Metrics Grid */
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 16px;
+    }
+
+    .metric-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 20px;
+      position: relative;
+      overflow: hidden;
+      transition: transform 0.2s, border-color 0.2s;
+    }
+
+    .metric-card:hover {
+      transform: translateY(-2px);
+      border-color: rgba(255, 255, 255, 0.15);
+    }
+
+    .metric-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+    }
+
+    .metric-value {
+      font-size: 28px;
+      font-weight: 800;
+      color: #ffffff;
+      margin-top: 6px;
+      display: flex;
+      align-items: baseline;
+      gap: 6px;
+    }
+
+    .metric-subtitle {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    /* Layout Two Columns */
+    .dashboard-split {
+      display: grid;
+      grid-template-columns: 420px 1fr;
+      gap: 24px;
+    }
+
+    @media (max-width: 1024px) {
+      .dashboard-split {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .panel-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      padding-bottom: 14px;
+    }
+
+    .panel-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    /* WhatsApp QR & Connection Box */
+    .qr-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      background: var(--surface-elevated);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      text-align: center;
+      min-height: 320px;
+    }
+
+    .qr-img {
+      width: 240px;
+      height: 240px;
+      border-radius: 12px;
+      background: white;
+      padding: 10px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+    }
+
+    .connected-device-card {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      padding: 20px;
+      background: rgba(16, 185, 129, 0.05);
+      border: 1px solid rgba(16, 185, 129, 0.2);
+      border-radius: 12px;
+      width: 100%;
+    }
+
+    .device-icon {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background: rgba(37, 211, 102, 0.15);
+      border: 2px solid var(--wa-green);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 26px;
+    }
+
+    .device-number {
+      font-size: 18px;
+      font-weight: 700;
+      color: #ffffff;
+      font-family: var(--font-mono);
+    }
+
+    .btn-group {
+      display: flex;
+      gap: 10px;
+      width: 100%;
+    }
+
+    .btn {
+      flex: 1;
+      height: 42px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all 0.2s;
+      border: none;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent) 0%, #059669 100%);
+      color: white;
+      box-shadow: 0 4px 12px var(--accent-glow);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-1px);
+    }
+
+    .btn-outline {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border);
+      color: var(--text);
+    }
+
+    .btn-outline:hover {
+      background: rgba(255, 255, 255, 0.1);
+      border-color: #475569;
+    }
+
+    .btn-danger {
+      background: rgba(239, 68, 68, 0.1);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      color: #f87171;
+    }
+
+    .btn-danger:hover {
+      background: rgba(239, 68, 68, 0.2);
+    }
+
+    /* Template Editor Section */
+    .template-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+
+    @media (max-width: 860px) {
+      .template-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .textarea-wrap {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .template-textarea {
+      width: 100%;
+      height: 180px;
+      background: var(--surface-elevated);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: #ffffff;
+      padding: 14px;
+      font-family: var(--font-mono);
+      font-size: 13px;
+      line-height: 1.5;
+      resize: vertical;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .template-textarea:focus {
+      border-color: var(--accent);
+    }
+
+    .placeholder-badge {
+      font-size: 11px;
+      background: rgba(16, 185, 129, 0.15);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      color: #a7f3d0;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-family: var(--font-mono);
+      display: inline-block;
+    }
+
+    /* WhatsApp Message Bubble Preview */
+    .preview-box {
+      background: #0b141a;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      background-image: radial-gradient(#1f2c34 1px, transparent 1px);
+      background-size: 12px 12px;
+    }
+
+    .wa-bubble {
+      background: #005c4b;
+      color: #e9edef;
+      padding: 12px 16px;
+      border-radius: 10px 10px 2px 10px;
+      font-size: 13.5px;
+      line-height: 1.5;
+      max-width: 90%;
+      margin-left: auto;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+      white-space: pre-wrap;
+      word-break: break-word;
+      position: relative;
+    }
+
+    .wa-bubble-time {
+      font-size: 10px;
+      color: rgba(255, 255, 255, 0.55);
+      text-align: right;
+      margin-top: 4px;
+    }
+
+    /* User Directory Table */
+    .search-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .search-input {
+      flex: 1;
+      max-width: 380px;
+      height: 40px;
+      padding: 0 14px;
+      background: var(--surface-elevated);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: #ffffff;
+      font-size: 13px;
+      outline: none;
+    }
+
+    .search-input:focus {
+      border-color: var(--accent);
+    }
+
+    .table-responsive {
+      overflow-x: auto;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 13px;
+    }
+
+    thead th {
+      background: var(--surface-elevated);
+      padding: 14px 18px;
+      color: var(--text-muted);
+      font-weight: 600;
+      text-transform: uppercase;
+      font-size: 11px;
+      letter-spacing: 0.6px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    tbody tr {
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+      transition: background 0.15s;
+    }
+
+    tbody tr:hover {
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    tbody td {
+      padding: 14px 18px;
+      color: #e2e8f0;
+    }
+
+    .mono-cell {
+      font-family: var(--font-mono);
+      color: #38bdf8;
+    }
+
+    .empty-state {
+      padding: 36px;
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 14px;
+    }
+
+    /* Login Modal Overlay */
+    .auth-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(9, 13, 22, 0.95);
+      backdrop-filter: blur(16px);
+      z-index: 2000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .login-card {
+      width: 400px;
+      max-width: 92vw;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 36px 32px;
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.6);
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .login-title {
+      font-size: 22px;
+      font-weight: 800;
+      color: #ffffff;
+      text-align: center;
+    }
+
+    .login-desc {
+      font-size: 13px;
+      color: var(--text-muted);
+      text-align: center;
+      line-height: 1.5;
+    }
+
+    .login-input {
+      width: 100%;
+      height: 48px;
+      padding: 0 16px;
+      background: var(--surface-elevated);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: #ffffff;
+      font-size: 15px;
+      outline: none;
+    }
+
+    .login-input:focus {
+      border-color: var(--accent);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Admin Login Modal -->
+  <div class="auth-overlay" id="auth-overlay">
+    <div class="login-card">
+      <div style="display:flex; justify-content:center;">
+        <div class="brand-logo" style="width:52px; height:52px; font-size:24px;">💬</div>
+      </div>
+      <h2 class="login-title">Admin Authentication</h2>
+      <p class="login-desc">Enter the configured administrator password to access device pairing and configuration.</p>
+      <input type="password" class="login-input" id="admin-pass-input" placeholder="Admin Password" autofocus />
+      <button class="btn btn-primary" id="btn-admin-login" style="height:48px;">
+        <span>Unlock Control Panel</span>
+      </button>
+      <div id="login-error" style="color:var(--danger); font-size:12px; text-align:center; display:none;"></div>
+    </div>
+  </div>
+
+  <!-- Header -->
+  <header>
+    <div class="brand">
+      <div class="brand-logo">💬</div>
+      <div class="brand-text">
+        <h1>WA-USERAUTH</h1>
+        <span>Admin Control Center</span>
+      </div>
+    </div>
+    <div class="nav-actions">
+      <div class="status-badge" id="top-status-badge">
+        <span class="status-dot"></span>
+        <span id="top-status-text">DISCONNECTED</span>
+      </div>
+      <button class="btn-logout" id="btn-logout">Lock Panel</button>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main id="admin-main">
+    <!-- Metrics Row -->
+    <div class="metrics-grid">
+      <div class="metric-card">
+        <div class="metric-label">Registered Users</div>
+        <div class="metric-value" id="stat-users">0</div>
+        <div class="metric-subtitle">Strict 3-field records in data/users.json</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">WhatsApp Status</div>
+        <div class="metric-value" id="stat-status" style="font-size:20px;">Checking...</div>
+        <div class="metric-subtitle" id="stat-phone">No device paired</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Daemon Engine</div>
+        <div class="metric-value" style="font-size:20px;">BerryProtocol</div>
+        <div class="metric-subtitle">Persistent session adapter</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">System Uptime</div>
+        <div class="metric-value" id="stat-uptime">0s</div>
+        <div class="metric-subtitle">Node.js Auth API Service</div>
+      </div>
+    </div>
+
+    <!-- Middle Split: Device Pairing & OTP Template Editor -->
+    <div class="dashboard-split">
+      <!-- Left Panel: WhatsApp QR Pairing -->
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-title">
+            <span>📱</span> WhatsApp Device Pairing
+          </div>
+          <button class="btn btn-outline" id="btn-refresh-qr" style="height:32px; font-size:12px; padding:0 10px;">
+            Refresh
+          </button>
+        </div>
+
+        <div class="qr-container" id="qr-box">
+          <div class="empty-state">Connecting to Berry transport...</div>
+        </div>
+
+        <div class="btn-group">
+          <button class="btn btn-primary" id="btn-reconnect-pair">
+            <span>🔄</span> Reconnect / New QR
+          </button>
+          <button class="btn btn-danger" id="btn-disconnect-pair">
+            <span>🔌</span> Disconnect
+          </button>
+        </div>
+      </div>
+
+      <!-- Right Panel: OTP Message Template Editor (Section L) -->
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-title">
+            <span>✉️</span> OTP Delivery Message Template
+          </div>
+          <span class="placeholder-badge">Placeholder: {{otp}}</span>
+        </div>
+
+        <div class="template-grid">
+          <div class="textarea-wrap">
+            <label style="font-size:12px; font-weight:600; color:var(--text-muted);">
+              Custom Template Text:
+            </label>
+            <textarea class="template-textarea" id="template-editor" placeholder="Enter message with {{otp}} placeholder..."></textarea>
+            <div style="display:flex; justify-content:space-between; align-items:center; font-size:11px; color:var(--text-muted);">
+              <span>Surrounding text is customizable. Exact <code style="color:#a7f3d0;">{{otp}}</code> is required.</span>
+              <span id="char-count">0 / 1000</span>
+            </div>
+          </div>
+
+          <div class="textarea-wrap">
+            <label style="font-size:12px; font-weight:600; color:var(--text-muted);">
+              Live WhatsApp Preview (Sample OTP 123456):
+            </label>
+            <div class="preview-box">
+              <div class="wa-bubble" id="wa-preview-bubble">
+                Your WA-USERAUTH verification code is 123456.
+              </div>
+              <div class="wa-bubble-time" id="preview-time">12:00 PM</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="btn-group" style="justify-content:flex-end;">
+          <button class="btn btn-outline" id="btn-restore-template" style="max-width:160px;">
+            Restore Default
+          </button>
+          <button class="btn btn-primary" id="btn-save-template" style="max-width:180px;">
+            Save Template
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottom Panel: Registered Users Directory -->
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-title">
+          <span>👥</span> Registered User Directory
+        </div>
+        <span style="font-size:12px; color:var(--text-muted);">
+          Protected storage: <code style="color:#38bdf8;">data/users.json</code> (Name, Mobile, Email ONLY)
+        </span>
+      </div>
+
+      <div class="search-row">
+        <input type="text" class="search-input" id="user-search-input" placeholder="Search by name, mobile (+E.164), or email..." />
+        <button class="btn btn-outline" id="btn-reload-users" style="height:40px; padding:0 16px;">
+          <span>🔄</span> Refresh Table
+        </button>
+      </div>
+
+      <div class="table-responsive">
+        <table>
+          <thead>
+            <tr>
+              <th>Full Name</th>
+              <th>Verified Mobile</th>
+              <th>Email Address</th>
+            </tr>
+          </thead>
+          <tbody id="user-table-body">
+            <tr>
+              <td colspan="3" class="empty-state">Loading user directory...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+
+  <div id="toast">Message</div>
+
+  <script>
+    (function () {
+      let adminToken = localStorage.getItem('wa_admin_token') || '';
+      let allUsers = [];
+
+      const toast = document.getElementById('toast');
+      function showToast(msg, isSuccess = true) {
+        toast.textContent = msg;
+        toast.className = `show ${isSuccess ? 'success' : 'error'}`;
+        setTimeout(() => { toast.className = ''; }, 3500);
+      }
+
+      function updateAuthUI() {
+        const overlay = document.getElementById('auth-overlay');
+        if (adminToken) {
+          overlay.style.display = 'none';
+          loadDashboard();
+          initLiveEventStream();
+        } else {
+          overlay.style.display = 'flex';
+          if (eventSource) {
+            try { eventSource.close(); } catch (e) {}
+            eventSource = null;
+          }
+          document.getElementById('admin-pass-input').focus();
+        }
+      }
+
+      // Login handler
+      document.getElementById('btn-admin-login').addEventListener('click', doLogin);
+      document.getElementById('admin-pass-input').addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') doLogin();
+      });
+
+      async function doLogin() {
+        const pass = document.getElementById('admin-pass-input').value.trim();
+        const errEl = document.getElementById('login-error');
+        errEl.style.display = 'none';
+
+        if (!pass) {
+          errEl.textContent = 'Please enter administrator password.';
+          errEl.style.display = 'block';
+          return;
+        }
+
+        try {
+          const res = await fetch('/api/v1/admin/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ password: pass })
+          });
+          const data = await res.json();
+          if (!res.ok) {
+            throw new Error(data.error || 'Authentication failed.');
+          }
+
+          adminToken = data.token;
+          localStorage.setItem('wa_admin_token', adminToken);
+          updateAuthUI();
+          showToast('Admin authenticated successfully.');
+        } catch (err) {
+          errEl.textContent = err.message;
+          errEl.style.display = 'block';
+        }
+      }
+
+      document.getElementById('btn-logout').addEventListener('click', () => {
+        adminToken = '';
+        localStorage.removeItem('wa_admin_token');
+        updateAuthUI();
+      });
+
+      // API Helper
+      async function adminFetch(endpoint, opts = {}) {
+        const headers = Object.assign({
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${adminToken}`
+        }, opts.headers || {});
+
+        const res = await fetch(endpoint, Object.assign({}, opts, { headers }));
+        if (res.status === 401) {
+          adminToken = '';
+          localStorage.removeItem('wa_admin_token');
+          updateAuthUI();
+          throw new Error('Session expired. Please log in again.');
+        }
+        return res;
+      }
+
+      // Load Complete Dashboard
+      async function loadDashboard() {
+        await Promise.allSettled([
+          fetchStatus(),
+          fetchQr(),
+          fetchTemplate(),
+          fetchUsers()
+        ]);
+      }
+
+      let eventSource = null;
+      let lastKnownStatus = '';
+
+      function renderConnectionState(status, phone = null, qrCode = null, platform = 'BerryProtocol') {
+        if (!status) return;
+
+        const prevStatus = lastKnownStatus;
+        lastKnownStatus = status;
+
+        // Metrics
+        const statStatusEl = document.getElementById('stat-status');
+        const statPhoneEl = document.getElementById('stat-phone');
+        if (statStatusEl) statStatusEl.textContent = status;
+        if (statPhoneEl) {
+          statPhoneEl.textContent = phone ? `${phone}` : (status === 'CONNECTED' ? 'WhatsApp Linked' : 'No device paired');
+        }
+
+        // Top Status Badge
+        const topBadge = document.getElementById('top-status-badge');
+        const topText = document.getElementById('top-status-text');
+        if (topText) topText.textContent = status;
+        if (topBadge) topBadge.className = `status-badge ${status.toLowerCase()}`;
+
+        // QR Box Live Rendering
+        const qrBox = document.getElementById('qr-box');
+        if (!qrBox) return;
+
+        if (status === 'CONNECTED') {
+          qrBox.innerHTML = `
+            <div class="connected-device-card">
+              <div class="device-icon">✅</div>
+              <div class="device-number">${phone || 'WhatsApp Linked'}</div>
+              <div style="font-size:13px; color:var(--wa-green); font-weight:600;">Active & Ready for OTP Dispatch</div>
+              <div style="font-size:11px; color:var(--text-muted); margin-top:4px;">Platform: ${escapeHtml(platform || 'BerryProtocol')}</div>
+            </div>
+          `;
+          if (prevStatus && prevStatus !== 'CONNECTED') {
+            showToast('🎉 WhatsApp device connected successfully!', true);
+          }
+        } else if (qrCode) {
+          qrBox.innerHTML = `
+            <p style="font-size:13px; color:var(--text-muted); margin-bottom:12px;">
+              Scan with WhatsApp (Linked Devices) to pair:
+            </p>
+            <img src="${qrCode}" class="qr-img" alt="WhatsApp Pairing QR Code" />
+            <p style="font-size:11px; color:#94a3b8; margin-top:10px;">Status: <strong>${status}</strong> (Live auto-sync active)</p>
+          `;
+        } else {
+          qrBox.innerHTML = `
+            <div class="empty-state">
+              <p>Status: <strong>${status}</strong></p>
+              <p style="margin-top:8px;">Generating pairing QR code...</p>
+            </div>
+          `;
+        }
+      }
+
+      // 1. Fetch Status
+      async function fetchStatus() {
+        try {
+          const res = await adminFetch('/api/v1/admin/status');
+          const data = await res.json();
+          if (!data.success) return;
+
+          document.getElementById('stat-users').textContent = data.users.totalRegistered;
+          renderConnectionState(data.whatsapp.status, data.whatsapp.phoneNumber, null, data.whatsapp.platform);
+
+          const uptimeSec = Math.floor(data.uptime);
+          const hrs = Math.floor(uptimeSec / 3600);
+          const mins = Math.floor((uptimeSec % 3600) / 60);
+          const secs = uptimeSec % 60;
+          document.getElementById('stat-uptime').textContent = `${hrs}h ${mins}m ${secs}s`;
+        } catch (e) {}
+      }
+
+      // 2. Fetch QR & Pairing UI
+      async function fetchQr() {
+        try {
+          const res = await adminFetch('/api/v1/admin/qr');
+          const data = await res.json();
+          renderConnectionState(data.status, data.phoneNumber, data.qrCode, 'BerryProtocol');
+        } catch (e) {
+          const qrBox = document.getElementById('qr-box');
+          if (qrBox && !lastKnownStatus) {
+            qrBox.innerHTML = `<div class="empty-state">Connecting to Berry transport...</div>`;
+          }
+        }
+      }
+
+      // Controls: Reconnect & Disconnect
+      document.getElementById('btn-reconnect-pair').addEventListener('click', async () => {
+        showToast('Initiating reconnection...');
+        try {
+          const res = await adminFetch('/api/v1/admin/pair/reconnect', { method: 'POST' });
+          const data = await res.json();
+          showToast(data.message || 'Pairing restarted.');
+          await fetchQr();
+          await fetchStatus();
+        } catch (err) {
+          showToast(err.message, false);
+        }
+      });
+
+      document.getElementById('btn-disconnect-pair').addEventListener('click', async () => {
+        if (!confirm('Are you sure you want to disconnect this device and wipe session credentials?')) return;
+        try {
+          const res = await adminFetch('/api/v1/admin/pair/disconnect', { method: 'POST' });
+          const data = await res.json();
+          showToast(data.message || 'Disconnected.');
+          await fetchQr();
+          await fetchStatus();
+        } catch (err) {
+          showToast(err.message, false);
+        }
+      });
+
+      document.getElementById('btn-refresh-qr').addEventListener('click', async () => {
+        await fetchQr();
+        await fetchStatus();
+        showToast('Refreshed connection status.');
+      });
+
+      // 3. Fetch & Update Message Template
+      const templateEditor = document.getElementById('template-editor');
+      const previewBubble = document.getElementById('wa-preview-bubble');
+      const charCount = document.getElementById('char-count');
+
+      templateEditor.addEventListener('input', () => {
+        const text = templateEditor.value;
+        charCount.textContent = `${text.length} / 1000`;
+        const preview = text.replace(/\{\{otp\}\}/g, '123456');
+        previewBubble.textContent = preview;
+      });
+
+      async function fetchTemplate() {
+        try {
+          const res = await adminFetch('/api/v1/admin/template');
+          const data = await res.json();
+          if (data.success) {
+            templateEditor.value = data.template;
+            charCount.textContent = `${data.template.length} / 1000`;
+            previewBubble.textContent = data.preview;
+          }
+        } catch (e) {}
+      }
+
+      document.getElementById('btn-save-template').addEventListener('click', async () => {
+        const text = templateEditor.value;
+        try {
+          const res = await adminFetch('/api/v1/admin/template', {
+            method: 'POST',
+            body: JSON.stringify({ template: text })
+          });
+          const data = await res.json();
+          if (!res.ok) throw new Error(data.error || 'Failed to save template.');
+          showToast('Template saved successfully!');
+          previewBubble.textContent = data.preview;
+        } catch (err) {
+          showToast(err.message, false);
+        }
+      });
+
+      document.getElementById('btn-restore-template').addEventListener('click', async () => {
+        if (!confirm('Restore the default WhatsApp OTP delivery template?')) return;
+        try {
+          const res = await adminFetch('/api/v1/admin/template/reset', { method: 'POST' });
+          const data = await res.json();
+          if (!res.ok) throw new Error(data.error || 'Failed to restore default.');
+          showToast('Restored default template.');
+          templateEditor.value = data.template;
+          previewBubble.textContent = data.preview;
+          charCount.textContent = `${data.template.length} / 1000`;
+        } catch (err) {
+          showToast(err.message, false);
+        }
+      });
+
+      // 4. Fetch Users Directory
+      async function fetchUsers() {
+        const tbody = document.getElementById('user-table-body');
+        try {
+          const res = await adminFetch('/api/v1/admin/users');
+          const data = await res.json();
+          if (data.success) {
+            allUsers = data.users || [];
+            renderUserTable(allUsers);
+          }
+        } catch (e) {
+          tbody.innerHTML = `<tr><td colspan="3" class="empty-state">Failed to load user directory.</td></tr>`;
+        }
+      }
+
+      function renderUserTable(users) {
+        const tbody = document.getElementById('user-table-body');
+        if (!users || users.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="3" class="empty-state">No users registered yet.</td></tr>`;
+          return;
+        }
+
+        tbody.innerHTML = users.map(u => `
+          <tr>
+            <td style="font-weight:600;">${escapeHtml(u.name)}</td>
+            <td class="mono-cell">${escapeHtml(u.mobile)}</td>
+            <td>${escapeHtml(u.email)}</td>
+          </tr>
+        `).join('');
+      }
+
+      function escapeHtml(s) {
+        return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+      }
+
+      document.getElementById('user-search-input').addEventListener('input', (e) => {
+        const q = e.target.value.toLowerCase().trim();
+        if (!q) {
+          renderUserTable(allUsers);
+          return;
+        }
+        const filtered = allUsers.filter(u =>
+          (u.name && u.name.toLowerCase().includes(q)) ||
+          (u.mobile && u.mobile.includes(q)) ||
+          (u.email && u.email.toLowerCase().includes(q))
+        );
+        renderUserTable(filtered);
+      });
+
+      document.getElementById('btn-reload-users').addEventListener('click', async () => {
+        await fetchUsers();
+        showToast('User directory refreshed.');
+      });
+
+      function handleLiveUpdate(data) {
+        if (!data) return;
+        renderConnectionState(data.status, data.phoneNumber, data.qrCode, data.platform);
+      }
+
+      function initLiveEventStream() {
+        if (!adminToken) return;
+        if (eventSource) {
+          try { eventSource.close(); } catch (e) {}
+          eventSource = null;
+        }
+
+        try {
+          eventSource = new EventSource('/api/v1/admin/stream?token=' + encodeURIComponent(adminToken));
+          eventSource.addEventListener('whatsapp_update', (e) => {
+            try {
+              const data = JSON.parse(e.data);
+              handleLiveUpdate(data);
+            } catch (err) {}
+          });
+          eventSource.onerror = () => {
+            if (eventSource) {
+              try { eventSource.close(); } catch (e) {}
+              eventSource = null;
+            }
+            setTimeout(() => {
+              if (adminToken && !eventSource) initLiveEventStream();
+            }, 3000);
+          };
+        } catch (e) {}
+      }
+
+      // Fast auto-polling fallback (every 2s guarantees instant update on scan)
+      setInterval(async () => {
+        if (!adminToken) return;
+        try {
+          await fetchQr();
+          await fetchStatus();
+        } catch (e) {}
+      }, 2000);
+
+      // Initial check
+      updateAuthUI();
+    })();
+  </script>
+</body>
+</html>

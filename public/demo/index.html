@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>WA-USERAUTH — One-Line Integration Demo</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #090d16;
+      --card: #111827;
+      --card-elevated: #1a2234;
+      --border: #243047;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --accent: #25d366;
+      --accent-hover: #128c7e;
+      --accent-glow: rgba(37, 211, 102, 0.25);
+      --font: 'Plus Jakarta Sans', -apple-system, sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: var(--font);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      background-image:
+        radial-gradient(circle at 10% 20%, rgba(37, 211, 102, 0.08) 0%, transparent 40%),
+        radial-gradient(circle at 90% 80%, rgba(18, 140, 126, 0.08) 0%, transparent 40%);
+    }
+
+    header {
+      border-bottom: 1px solid var(--border);
+      padding: 18px 36px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: rgba(17, 24, 39, 0.7);
+      backdrop-filter: blur(12px);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-icon {
+      width: 40px;
+      height: 40px;
+      background: linear-gradient(135deg, #25d366 0%, #128c7e 100%);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      color: white;
+      box-shadow: 0 4px 16px var(--accent-glow);
+    }
+
+    .brand-title {
+      font-size: 19px;
+      font-weight: 800;
+      letter-spacing: -0.4px;
+    }
+
+    .nav-links a {
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 600;
+      margin-left: 20px;
+      transition: color 0.15s;
+    }
+
+    .nav-links a:hover {
+      color: #ffffff;
+    }
+
+    main {
+      flex: 1;
+      max-width: 1100px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 48px 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 48px;
+    }
+
+    .hero {
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 14px;
+      background: rgba(37, 211, 102, 0.1);
+      border: 1px solid rgba(37, 211, 102, 0.3);
+      border-radius: 30px;
+      color: #a7f3d0;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .hero h1 {
+      font-size: 42px;
+      font-weight: 800;
+      letter-spacing: -1px;
+      line-height: 1.2;
+      background: linear-gradient(to right, #ffffff, #cbd5e1);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .hero p {
+      font-size: 16px;
+      color: var(--text-muted);
+      max-width: 640px;
+      line-height: 1.6;
+    }
+
+    /* Demo Sandbox Card */
+    .sandbox-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 36px;
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.4);
+      display: flex;
+      flex-direction: column;
+      gap: 28px;
+    }
+
+    .sandbox-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: gap;
+      gap: 16px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      padding-bottom: 20px;
+    }
+
+    .sandbox-title h3 {
+      font-size: 20px;
+      font-weight: 700;
+    }
+
+    .sandbox-title p {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    .cta-group {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      flex-wrap: wrap;
+    }
+
+    /* Declarative Auth Button */
+    .btn-wa-auth {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      background: linear-gradient(135deg, #25d366 0%, #128c7e 100%);
+      color: #ffffff;
+      padding: 14px 26px;
+      border-radius: 12px;
+      font-size: 15px;
+      font-weight: 700;
+      border: none;
+      cursor: pointer;
+      box-shadow: 0 6px 20px var(--accent-glow);
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .btn-wa-auth:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 25px rgba(37, 211, 102, 0.4);
+    }
+
+    .btn-programmatic {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid var(--border);
+      color: #ffffff;
+      padding: 14px 22px;
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-programmatic:hover {
+      background: rgba(255, 255, 255, 0.12);
+      border-color: #475569;
+    }
+
+    /* Identity Verified Box */
+    .verified-result-box {
+      background: var(--card-elevated);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 24px;
+      display: none;
+      flex-direction: column;
+      gap: 16px;
+      animation: fadeIn 0.3s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .verified-result-box.show {
+      display: flex;
+    }
+
+    .verified-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: #34d399;
+      font-size: 15px;
+      font-weight: 700;
+    }
+
+    .user-profile-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 14px;
+    }
+
+    .profile-field {
+      background: rgba(0, 0, 0, 0.25);
+      padding: 12px 16px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+    }
+
+    .profile-label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    .profile-val {
+      font-size: 15px;
+      font-weight: 700;
+      color: #ffffff;
+      margin-top: 4px;
+    }
+
+    .token-snippet {
+      background: rgba(0, 0, 0, 0.4);
+      padding: 12px 14px;
+      border-radius: 8px;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: #38bdf8;
+      word-break: break-all;
+    }
+
+    /* Integration Guide Tabs & Code */
+    .code-section {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .code-section h3 {
+      font-size: 18px;
+      font-weight: 700;
+    }
+
+    .code-box {
+      background: #0d121f;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    .code-box-header {
+      background: #141c2e;
+      padding: 10px 16px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-muted);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    pre code {
+      display: block;
+      padding: 18px;
+      font-family: var(--font-mono);
+      font-size: 13px;
+      line-height: 1.6;
+      color: #e2e8f0;
+      overflow-x: auto;
+    }
+
+    .highlight-script { color: #f472b6; }
+    .highlight-attr { color: #38bdf8; }
+    .highlight-val { color: #34d399; }
+  </style>
+
+  <!-- 1. Universal WA-USERAUTH script tag -->
+  <script src="/wa-userauth.js" data-app-key="app_default_demo"></script>
+</head>
+<body>
+
+  <header>
+    <div class="brand">
+      <div class="brand-icon">💬</div>
+      <div class="brand-title">WA-USERAUTH</div>
+    </div>
+    <div class="nav-links">
+      <a href="/admin">Admin Panel</a>
+      <a href="/health" target="_blank">Health Check</a>
+    </div>
+  </header>
+
+  <main>
+    <div class="hero">
+      <div class="hero-badge">⚡ The 1-Line Self-Hosted WhatsApp Login</div>
+      <h1>Passwordless WhatsApp Authentication</h1>
+      <p>
+        Deliver instant OTP authentication directly through WhatsApp. 
+        Zero passwords, zero complex OAuth flows, just 1 script tag and 1 HTML button.
+      </p>
+    </div>
+
+    <!-- Live Interactive Sandbox -->
+    <div class="sandbox-card">
+      <div class="sandbox-header">
+        <div class="sandbox-title">
+          <h3>Try the Embedded Modal</h3>
+          <p>Click either button below to test the live authentication modal in this website.</p>
+        </div>
+      </div>
+
+      <div class="cta-group">
+        <!-- 2. Declarative Integration Button -->
+        <button data-wa-userauth class="btn-wa-auth" data-on-success="onDemoAuthSuccess">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91C2.13 13.66 2.59 15.36 3.45 16.86L2.05 22L7.3 20.62C8.75 21.41 10.38 21.83 12.04 21.83C17.5 21.83 21.95 17.38 21.95 11.92C21.95 9.27 20.92 6.78 19.05 4.91C17.18 3.03 14.69 2 12.04 2M12.05 3.67C14.25 3.67 16.31 4.53 17.87 6.09C19.42 7.65 20.28 9.72 20.28 11.92C20.28 16.46 16.58 20.15 12.04 20.15C10.56 20.15 9.11 19.76 7.85 19L7.55 18.83L4.43 19.65L5.26 16.61L5.06 16.29C4.24 15 3.8 13.47 3.8 11.91C3.81 7.37 7.5 3.67 12.05 3.67M9.53 7.35C9.37 7.35 9.1 7.41 8.88 7.65C8.65 7.89 8.02 8.49 8.02 9.71C8.02 10.93 8.91 12.11 9.03 12.27C9.16 12.43 10.74 14.86 13.16 15.91C15.17 16.78 15.58 16.61 16.02 16.57C16.46 16.53 17.44 15.99 17.65 15.42C17.85 14.85 17.85 14.36 17.79 14.26C17.73 14.16 17.57 14.1 17.31 13.97C17.05 13.84 15.77 13.21 15.53 13.12C15.3 13.04 15.13 13 14.96 13.24C14.8 13.49 14.33 14.04 14.19 14.2C14.05 14.37 13.91 14.39 13.65 14.26C13.39 14.13 12.56 13.86 11.57 12.98C10.8 12.29 10.28 11.44 10.14 11.2C10 10.96 10.12 10.82 10.25 10.69C10.37 10.57 10.52 10.38 10.65 10.22C10.79 10.06 10.83 9.94 10.92 9.78C11.01 9.62 10.96 9.47 10.9 9.35C10.84 9.23 10.36 8.05 10.16 7.57C9.97 7.1 9.77 7.17 9.62 7.16C9.48 7.15 9.32 7.35 9.53 7.35Z"/>
+          </svg>
+          <span>Login with WhatsApp (Declarative)</span>
+        </button>
+
+        <!-- Programmatic API Button -->
+        <button class="btn-programmatic" id="btn-programmatic-open">
+          <span>⚙️ JavaScript API: WAUserAuth.open()</span>
+        </button>
+      </div>
+
+      <!-- Verified Identity Output -->
+      <div class="verified-result-box" id="verified-result-box">
+        <div class="verified-header">
+          <span>✅</span>
+          <span>Authentication Verified by Developer Backend</span>
+        </div>
+
+        <div class="user-profile-grid">
+          <div class="profile-field">
+            <div class="profile-label">Verified Name</div>
+            <div class="profile-val" id="res-name">-</div>
+          </div>
+          <div class="profile-field">
+            <div class="profile-label">Verified Mobile</div>
+            <div class="profile-val" id="res-mobile" style="font-family:var(--font-mono); color:#38bdf8;">-</div>
+          </div>
+          <div class="profile-field">
+            <div class="profile-label">Verified Email</div>
+            <div class="profile-val" id="res-email">-</div>
+          </div>
+        </div>
+
+        <div>
+          <div class="profile-label" style="margin-bottom:6px;">Single-Use Auth Token Validated:</div>
+          <div class="token-snippet" id="res-token">-</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Developer Copy-Paste Integration Snippets -->
+    <div class="code-section">
+      <h3>Two-Step Developer Integration</h3>
+
+      <div class="code-box">
+        <div class="code-box-header">
+          <span>Step 1: Frontend HTML (Zero Framework Dependency)</span>
+          <span>index.html</span>
+        </div>
+        <pre><code><span class="highlight-script">&lt;!-- 1. Include the universal integration script --&gt;</span>
+&lt;script src="https://your-domain.com/wa-userauth.js" <span class="highlight-attr">data-app-key</span>="<span class="highlight-val">your_app_key</span>"&gt;&lt;/script&gt;
+
+<span class="highlight-script">&lt;!-- 2. Add the login button anywhere on your site --&gt;</span>
+&lt;button <span class="highlight-attr">data-wa-userauth</span>&gt;Login with WhatsApp&lt;/button&gt;
+
+<span class="highlight-script">&lt;!-- 3. Listen for the authentication result event --&gt;</span>
+&lt;script&gt;
+  window.addEventListener('wa-userauth:success', async (e) =&gt; {
+    const { authToken } = e.detail;
+    // Send authToken to your backend for server-to-server validation:
+    const res = await fetch('/api/login/verify-wa', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ authToken })
+    });
+    const session = await res.json();
+    console.log('Logged in user:', session.user);
+  });
+&lt;/script&gt;</code></pre>
+      </div>
+
+      <div class="code-box">
+        <div class="code-box-header">
+          <span>Step 2: Backend Verification (Node.js / Express Example)</span>
+          <span>server.js</span>
+        </div>
+        <pre><code>app.post('/api/login/verify-wa', async (req, res) =&gt; {
+  const { authToken } = req.body;
+
+  // Validate the single-use token with your WA-USERAUTH instance:
+  const verifyRes = await fetch('https://your-domain.com/api/v1/auth/result/verify', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      authToken,
+      appKey: process.env.WA_APP_KEY,
+      appSecret: process.env.WA_APP_SECRET
+    })
+  });
+
+  const outcome = await verifyRes.json();
+  if (!outcome.valid) {
+    return res.status(401).json({ error: outcome.error });
+  }
+
+  // Authoritative verified profile: outcome.user { name, mobile, email }
+  req.session.user = outcome.user;
+  res.json({ success: true, user: outcome.user });
+});</code></pre>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    // Global callback referenced in declarative button: data-on-success="onDemoAuthSuccess"
+    window.onDemoAuthSuccess = async function (authResult) {
+      console.log('Demo Auth Callback Received:', authResult);
+      handleVerifiedResult(authResult);
+    };
+
+    // Also listen to custom DOM event
+    window.addEventListener('wa-userauth:success', (e) => {
+      console.log('DOM Event wa-userauth:success:', e.detail);
+      handleVerifiedResult(e.detail);
+    });
+
+    // Programmatic button
+    document.getElementById('btn-programmatic-open').addEventListener('click', () => {
+      window.WAUserAuth.open({
+        appKey: 'app_default_demo',
+        onSuccess: (res) => {
+          handleVerifiedResult(res);
+        },
+        onError: (err) => {
+          console.error('Auth error:', err);
+        }
+      });
+    });
+
+    async function handleVerifiedResult(authResult) {
+      if (!authResult || !authResult.authToken) return;
+
+      const box = document.getElementById('verified-result-box');
+      box.classList.add('show');
+
+      document.getElementById('res-name').textContent = authResult.user?.name || '-';
+      document.getElementById('res-mobile').textContent = authResult.user?.mobile || '-';
+      document.getElementById('res-email').textContent = authResult.user?.email || '-';
+      document.getElementById('res-token').textContent = authResult.authToken;
+
+      // Simulate developer backend validation to verify the result against /api/v1/auth/result/verify
+      try {
+        const verifyRes = await fetch('/api/v1/auth/result/verify', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            authToken: authResult.authToken,
+            appKey: 'app_default_demo',
+            appSecret: 'secret_default_demo_key_998877'
+          })
+        });
+
+        const verifyOutcome = await verifyRes.json();
+        if (verifyOutcome.valid) {
+          console.log('Backend Validation Succeeded:', verifyOutcome.user);
+        } else {
+          console.warn('Backend Validation Notice:', verifyOutcome.error);
+        }
+      } catch (e) {
+        console.error('Backend validation simulation error:', e);
+      }
+    }
+  </script>
+</body>
+</html>

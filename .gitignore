@@ -1,65 +1,10 @@
-# Dependencies
 node_modules/
-.pnpm-store/
-
-# Build outputs
-dist/
-build/
-.next/
-out/
-
-# WhatsApp multi-device session runtime data (PRIVATE / SENSITIVE)
-.baileys_auth/
-apps/whatsapp-worker/.baileys_auth/
-.wwebjs_auth/
-.wwebjs_auth_vis/
-.wwebjs_cache/
-session.json
-
-<<<<<<< HEAD
-# Environment variables
 .env
-.env.*
-.env.local
-.env.development
-.env.production
-!.env.example
-
-=======
->>>>>>> 5b4b12f0f680677fb58127b8ad67d08e60b2851c
-# Development artifacts & dumps
-folder-structure.txt
-
-# Logs
-logs/
+data/berry_auth/
+data/berry_store.db*
+data/*.tmp
+data/rate_limits.json
+data/whatsapp_session.json
 *.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
-
-# Database / SQLite dev files
-*.sqlite
-*.sqlite-journal
-*.db
-*.db-journal
-
-# OS files
 .DS_Store
 Thumbs.db
-
-# Turborepo & caches
-.turbo/
-.cache/
-
-# Coverage
-coverage/
-<<<<<<< HEAD
-=======
-
-# TypeScript build metadata
-*.tsbuildinfo
-
-# Vercel deployment metadata
-.vercel/
->>>>>>> 5b4b12f0f680677fb58127b8ad67d08e60b2851c

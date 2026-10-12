@@ -1,34 +1,29 @@
 {
-  "name": "whatsapp-auth",
+  "name": "wa-userauth",
   "version": "1.0.0",
-  "description": "Open-Source Self-Hosted WhatsApp Authentication Platform",
-  "license": "MIT",
-  "private": true,
-  "workspaces": [
-    "packages/*",
-    "apps/*"
-  ],
+  "description": "Self-hosted WhatsApp OTP authentication service for developers",
+  "main": "src/index.js",
+  "type": "module",
   "scripts": {
-    "postinstall": "npm --workspace=@whatsapp-auth/db run prisma:generate",
-    "start": "powershell -ExecutionPolicy Bypass -File ./scripts/control.ps1",
-    "dev": "concurrently -k -p \"[{name}]\" -n \"API,WORKER,DASH\" -c \"cyan.bold,green.bold,magenta.bold\" \"npm --workspace=@whatsapp-auth/api run dev\" \"npm --workspace=@whatsapp-auth/whatsapp-worker run dev\" \"npm --workspace=@whatsapp-auth/dashboard run dev\"",
-    "worker:diagnostic": "npm --workspace=@whatsapp-auth/whatsapp-worker run diagnostic",
-    "build": "npm --workspace=@whatsapp-auth/protocol run build && npm --workspace=@whatsapp-auth/security run build && npm --workspace=@whatsapp-auth/core run build && npm --workspace=@whatsapp-auth/db run build && npm --workspace=@whatsapp-auth/sdk run build && npm --workspace=@whatsapp-auth/api run build && npm --workspace=@whatsapp-auth/whatsapp-worker run build && npm --workspace=@whatsapp-auth/dashboard run build",
-    "build:all": "powershell -ExecutionPolicy Bypass -File ./scripts/build-all.ps1",
-    "test": "vitest run",
-    "dev:all": "powershell -ExecutionPolicy Bypass -File ./scripts/start-local.ps1",
-    "docker:up": "powershell -ExecutionPolicy Bypass -File ./scripts/start-docker.ps1",
-    "docker:stop": "powershell -ExecutionPolicy Bypass -File ./scripts/stop-docker.ps1",
-    "docker:pause": "powershell -ExecutionPolicy Bypass -File ./scripts/pause-docker.ps1",
-    "docker:resume": "powershell -ExecutionPolicy Bypass -File ./scripts/resume-docker.ps1",
-    "dev:api": "npm --workspace=@whatsapp-auth/api run dev",
-    "dev:worker": "npm --workspace=@whatsapp-auth/whatsapp-worker run dev",
-    "dev:dashboard": "npm --workspace=@whatsapp-auth/dashboard run dev"
+    "start": "node src/index.js",
+    "dev": "node --watch src/index.js",
+    "test": "node --test tests/**/*.test.js"
   },
-  "devDependencies": {
-    "concurrently": "^8.2.2",
-    "tsx": "^4.7.2",
-    "typescript": "^5.4.5",
-    "vitest": "^1.6.0"
+  "keywords": [
+    "whatsapp",
+    "auth",
+    "otp",
+    "passwordless",
+    "developer",
+    "self-hosted"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "cors": "^2.8.5",
+    "qrcode": "^1.5.4",
+    "berryprotocol": "^0.1.10"
   }
 }
