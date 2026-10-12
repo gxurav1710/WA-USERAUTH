@@ -136,32 +136,32 @@ Integrate on any platform (plain HTML, React, Next.js, Vue, WordPress, Shopify, 
 <button data-wa-userauth>Login with WhatsApp</button>
 ```
 
-### 3. 🛡️ Strict 3-Field Invariant User Store (`data/users.json`)
+### 3. 🛡️ 3-Field Invariant User Store (`data/users.json`)
 Data architecture enforced with strict mathematical invariants:
 - **Exactly one database file**: `data/users.json`.
 - **Strictly and only 3 fields**: `name`, `mobile`, `email`.
 - **Zero bloat**: Extra fields like `id`, `role`, `password`, `created_at` are rejected with errors.
 - **Atomic updates**: Written via temporary `.tmp` buffers and atomic OS renames with automatic corrupted-file backup preservation.
 
-### 4. 🌍 Glitch-Free Global Country Picker (240+ Countries & Territories)
+### 4. 🌍 Country Picker (240+ Countries & Territories)
 - Comprehensive dataset covering every single country and territory worldwide with WhatsApp connectivity (+1 to +998).
 - **In-Modal Full-Height Sheet (`.wa-country-view`)**: Eliminates overflow clipping glitches entirely.
 - **Instant Search**: Type country name, ISO code, or dialing code with or without `+` (e.g. `India`, `IN`, `91`, or `+91`).
 - Custom dark scrollbars with smooth touch scrolling and `Escape` key dismissal.
 
-### 5. 🧩 Real Visual Distorted Alphanumeric CAPTCHA
+### 5. 🧩 Alphanumeric CAPTCHA
 - **Human-Verifiable SVG Image**: 5 distinct alphanumeric characters (`23456789ABCDEFGHJKLMNPQRSTUVWXYZ`, excluding confusing characters `0, O, 1, I, l`).
 - **Cryptographic Distortion**: Randomized character rotations (-18° to +18°), curved Bezier noise interference lines, and random noise dots.
 - **1-Click Instant Refresh**: Generates fresh challenges without page reloads.
 - **Single-Use Replay Protection**: Challenges expire after 5 minutes and are destroyed upon use.
 
-### 6. ⏱️ Robust Rolling-Window Rate Limiting
+### 6. ⏱️ Rate Limiting
 - **Cooldown Interval**: 60-second cooldown between sends to the same E.164 number.
 - **Rolling Quotas**: Max 3 sends per 15 min, max 5 per 1 hr, max 10 per 24 hr.
 - **IP Protection**: Max 30 attempts per 15 minutes per IP address.
 - **State Persistence**: Serialized into `data/rate_limits.json` so limits survive application restarts.
 
-### 7. 📱 Persistent WhatsApp Multi-Device Session (Berry Protocol)
+### 7. 📱 Persistent WhatsApp Device Session (Berry Protocol)
 - Headless multi-device socket keeps pairing alive across server restarts (`data/berry_auth/`).
 - Auto-reconnect loop with exponential backoff.
 - Zero Chrome/Puppeteer heavy browser requirements.
@@ -174,10 +174,7 @@ Data architecture enforced with strict mathematical invariants:
 ### 9. 🔐 Cryptographic Server-to-Server Result Tokens
 - Frontend receives short-lived, single-use, HMAC-SHA256 signed `authToken`.
 - Developers verify tokens through authoritative backend-to-backend API calls (`POST /api/v1/auth/result/verify`).
-
-### 10. 🧪 100% Automated Regression Test Suite
-- Comprehensive suite of 40 unit and integration tests covering user storage, rate limits, templates, CAPTCHA verification, and authentication lifecycles.
-
+- 
 <br/>
 
 ---
