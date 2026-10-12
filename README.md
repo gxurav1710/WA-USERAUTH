@@ -450,7 +450,3 @@ npm test
 <br/>
 
 ---
-
-## 📄 License
-
-Apache-2.0 © 2026 Gaurav & Deepmind Agentic Contributors. Free for personal and commercial usage.
